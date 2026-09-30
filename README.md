@@ -6,6 +6,7 @@ Kettu plugins that make Discord look like a terminal.
 | --- | --- |
 | **Terminal Prompt** | Turns the message box placeholder into a shell prompt, e.g. `ethan@discord:~/#general$` |
 | **Terminal Timestamps** | Shows message times as `[HH:MM:SS]`, like a shell log |
+| **Local Edits** | Edit or hide anyone's messages, only on your phone. Nobody else sees the change |
 | **Background Switcher** | Adds `/background <image url>` to set your chat background. `/background` on its own (or `none` / `null`) goes back to the theme's default |
 
 There's also a **Terminal** theme (black background, green text) in `themes/`.
@@ -20,6 +21,7 @@ In Kettu go to **Settings → Plugins → +** and paste one of these URLs.
 https://cathousing.github.io/horrible-kettu-plugins/plugins/terminal-prompt/
 https://cathousing.github.io/horrible-kettu-plugins/plugins/terminal-timestamps/
 https://cathousing.github.io/horrible-kettu-plugins/plugins/background-switcher/
+https://cathousing.github.io/horrible-kettu-plugins/plugins/local-edits/
 ```
 
 Theme (Settings → Themes → +):
@@ -34,6 +36,7 @@ https://cathousing.github.io/horrible-kettu-plugins/themes/terminal.json
 https://raw.githubusercontent.com/CatHousing/horrible-kettu-plugins/master/plugins/terminal-prompt/
 https://raw.githubusercontent.com/CatHousing/horrible-kettu-plugins/master/plugins/terminal-timestamps/
 https://raw.githubusercontent.com/CatHousing/horrible-kettu-plugins/master/plugins/background-switcher/
+https://raw.githubusercontent.com/CatHousing/horrible-kettu-plugins/master/plugins/local-edits/
 https://raw.githubusercontent.com/CatHousing/horrible-kettu-plugins/master/themes/terminal.json
 ```
 
@@ -54,6 +57,26 @@ For plugins, keep the trailing `/`. Kettu loads `manifest.json` and `index.js` f
 - Discord upload links (`cdn.discordapp.com/attachments/...`) expire after about a day. Use a permanent host like Imgur or catbox.
 - Kettu's theme settings have a switch that hides custom backgrounds; if it's on, you won't see this one either.
 - Only the chat area gets the background.
+
+## Local Edits
+
+Long-press any message for **Edit locally**, **Hide locally** and, on messages you've edited, **Restore original**.
+The changes only exist on your phone: Discord's servers and everyone else still see the real messages.
+
+If those buttons don't appear (Discord changes that menu now and then), use the commands.
+Either reply to the message first, or paste its link (long-press → Copy Message Link) into `message`:
+
+```
+/ledit text:<new text> [message:<link or ID>]   change a message's text
+/lhide [message:<link or ID>]                   hide a message
+/lrestore [message:<link or ID>]                undo one message; with no message, undo everything in this channel
+/lrestore all:true                              undo everything, everywhere
+```
+
+- Edits and hides are saved and re-applied whenever Discord loads messages, so they survive restarts.
+- Your edit wins if the author really edits the message later.
+- Turning the plugin off shows the real messages again (hidden ones return after a restart); turning it back on re-applies your changes.
+- Only messages your phone loads are affected; Discord on other devices shows the real thing.
 
 ## One-time setup: turn on GitHub Pages
 
