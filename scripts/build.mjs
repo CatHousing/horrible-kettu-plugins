@@ -33,8 +33,20 @@ for (const id of readdirSync(pluginsDir).sort()) {
     built.push({ id, name: manifest.name, description: manifest.description });
 }
 
-const items = built
-    .map(p => `<li><b>${p.name}</b> - ${p.description}<br><code class="url" data-id="${p.id}"></code></li>`)
+const themes = [];
+if (existsSync("themes")) {
+    cpSync("themes", join(distDir, "themes"), { recursive: true });
+    for (const file of readdirSync("themes").filter(f => f.endsWith(".json")).sort()) {
+        const theme = JSON.parse(readFileSync(join("themes", file), "utf8"));
+        themes.push({ path: `themes/${file}`, name: theme.name, description: theme.description });
+    }
+}
+
+const items = [
+    ...built.map(p => ({ ...p, path: `${p.id}/` })),
+    ...themes.map(t => ({ ...t, name: `${t.name} (theme)` }))
+]
+    .map(p => `<li><b>${p.name}</b> - ${p.description}<br><code class="url" data-path="${p.path}"></code></li>`)
     .join("\n");
 writeFileSync(join(distDir, "index.html"), `<!doctype html>
 <meta charset="utf-8">
@@ -42,11 +54,11 @@ writeFileSync(join(distDir, "index.html"), `<!doctype html>
 <title>Kettu Plugins</title>
 <style>body{font-family:monospace;background:#0d0d0d;color:#33ff66;padding:16px;max-width:720px;margin:auto}li{margin:12px 0}code{color:#fff}</style>
 <h1>$ ls plugins/</h1>
-<p>Copy a URL below into Kettu: Settings &rarr; Plugins &rarr; + (install).</p>
+<p>Copy a URL below into Kettu: Settings &rarr; Plugins (or Themes) &rarr; + (install).</p>
 <ul>
 ${items}
 </ul>
-<script>for (const el of document.querySelectorAll(".url")) el.textContent = new URL(el.dataset.id + "/", location.href).href;</script>
+<script>for (const el of document.querySelectorAll(".url")) el.textContent = new URL(el.dataset.path, location.href).href;</script>
 `);
 
-console.log(`Built ${built.length} plugin(s) into ${distDir}/`);
+console.log(`Built ${built.length} plugin(s) and ${themes.length} theme(s) into ${distDir}/`);

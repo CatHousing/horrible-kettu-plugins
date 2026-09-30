@@ -1,0 +1,35 @@
+{
+  "spec": 2,
+  "name": "Terminal",
+  "description": "Black background, green text. Goes with the terminal plugins and Background Switcher.",
+  "authors": [
+    {
+      "name": "ethan"
+    }
+  ],
+  "semanticColors": {
+    "BACKGROUND_PRIMARY": ["#0d0d0d", "#0d0d0d"],
+    "BACKGROUND_SECONDARY": ["#080808", "#080808"],
+    "BACKGROUND_SECONDARY_ALT": ["#121212", "#121212"],
+    "BACKGROUND_TERTIARY": ["#000000", "#000000"],
+    "BACKGROUND_FLOATING": ["#101010", "#101010"],
+    "BACKGROUND_MOBILE_PRIMARY": ["#0d0d0d", "#0d0d0d"],
+    "BACKGROUND_MOBILE_SECONDARY": ["#080808", "#080808"],
+    "BACKGROUND_MODIFIER_ACCENT": ["#1f3d24", "#1f3d24"],
+    "CHANNELTEXTAREA_BACKGROUND": ["#121212", "#121212"],
+    "CARD_BACKGROUND_DEFAULT": ["#121212", "#121212"],
+    "BORDER_SUBTLE": ["#1f3d24", "#1f3d24"],
+    "TEXT_NORMAL": ["#33ff66", "#33ff66"],
+    "TEXT_DEFAULT": ["#33ff66", "#33ff66"],
+    "TEXT_MUTED": ["#1f9e40", "#1f9e40"],
+    "TEXT_LINK": ["#66ffcc", "#66ffcc"],
+    "HEADER_PRIMARY": ["#66ff8c", "#66ff8c"],
+    "HEADER_SECONDARY": ["#2bcc55", "#2bcc55"],
+    "MOBILE_TEXT_HEADING_PRIMARY": ["#66ff8c", "#66ff8c"],
+    "CHANNELS_DEFAULT": ["#1f9e40", "#1f9e40"],
+    "INTERACTIVE_NORMAL": ["#2bcc55", "#2bcc55"],
+    "INTERACTIVE_ACTIVE": ["#66ff8c", "#66ff8c"],
+    "INTERACTIVE_MUTED": ["#145c26", "#145c26"],
+    "INTERACTIVE_ICON_DEFAULT": ["#2bcc55", "#2bcc55"]
+  }
+}
