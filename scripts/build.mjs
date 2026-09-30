@@ -29,7 +29,7 @@ for (const id of readdirSync(pluginsDir).sort()) {
         console.log(`${id}: up to date`);
     }
 
-    cpSync(dir, join(distDir, id), { recursive: true });
+    cpSync(dir, join(distDir, "plugins", id), { recursive: true });
     built.push({ id, name: manifest.name, description: manifest.description });
 }
 
@@ -43,7 +43,7 @@ if (existsSync("themes")) {
 }
 
 const items = [
-    ...built.map(p => ({ ...p, path: `${p.id}/` })),
+    ...built.map(p => ({ ...p, path: `plugins/${p.id}/` })),
     ...themes.map(t => ({ ...t, name: `${t.name} (theme)` }))
 ]
     .map(p => `<li><b>${p.name}</b> - ${p.description}<br><code class="url" data-path="${p.path}"></code></li>`)

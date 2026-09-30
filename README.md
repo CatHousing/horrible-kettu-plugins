@@ -17,9 +17,9 @@ In Kettu go to **Settings → Plugins → +** and paste one of these URLs.
 **GitHub Pages (recommended, updates quickly):**
 
 ```
-https://cathousing.github.io/horrible-kettu-plugins/terminal-prompt/
-https://cathousing.github.io/horrible-kettu-plugins/terminal-timestamps/
-https://cathousing.github.io/horrible-kettu-plugins/background-switcher/
+https://cathousing.github.io/horrible-kettu-plugins/plugins/terminal-prompt/
+https://cathousing.github.io/horrible-kettu-plugins/plugins/terminal-timestamps/
+https://cathousing.github.io/horrible-kettu-plugins/plugins/background-switcher/
 ```
 
 Theme (Settings → Themes → +):
@@ -31,10 +31,10 @@ https://cathousing.github.io/horrible-kettu-plugins/themes/terminal.json
 **Raw GitHub (works without Pages, but GitHub caches it for about 5 minutes):**
 
 ```
-https://raw.githubusercontent.com/CatHousing/horrible-kettu-plugins/main/plugins/terminal-prompt/
-https://raw.githubusercontent.com/CatHousing/horrible-kettu-plugins/main/plugins/terminal-timestamps/
-https://raw.githubusercontent.com/CatHousing/horrible-kettu-plugins/main/plugins/background-switcher/
-https://raw.githubusercontent.com/CatHousing/horrible-kettu-plugins/main/themes/terminal.json
+https://raw.githubusercontent.com/CatHousing/horrible-kettu-plugins/master/plugins/terminal-prompt/
+https://raw.githubusercontent.com/CatHousing/horrible-kettu-plugins/master/plugins/terminal-timestamps/
+https://raw.githubusercontent.com/CatHousing/horrible-kettu-plugins/master/plugins/background-switcher/
+https://raw.githubusercontent.com/CatHousing/horrible-kettu-plugins/master/themes/terminal.json
 ```
 
 For plugins, keep the trailing `/`. Kettu loads `manifest.json` and `index.js` from that folder.
@@ -59,9 +59,13 @@ For plugins, keep the trailing `/`. Kettu loads `manifest.json` and `index.js` f
 
 1. Open the repo on GitHub and go to **Settings → Pages**.
 2. Under **Build and deployment → Source**, pick **GitHub Actions**.
-3. Push to `main`, or run the **Deploy plugins to GitHub Pages** workflow from the **Actions** tab.
+3. Push to `master`, or run the **Deploy plugins to GitHub Pages** workflow from the **Actions** tab.
 
-After that, every push to `main` redeploys the plugins, and
+(**Deploy from a branch** → `master` / `(root)` also works and gives the same links, since the
+site mirrors the repo's `plugins/` and `themes/` folders. With that option, delete
+`.github/workflows/deploy.yml` so its failing runs don't clutter the Actions tab.)
+
+After that, every push to `master` redeploys the plugins, and
 `https://cathousing.github.io/horrible-kettu-plugins/` lists them all.
 
 ## Layout
@@ -80,7 +84,7 @@ scripts/build.mjs   refreshes the hashes and builds dist/ for Pages
 
 1. Edit `plugins/<id>/index.js`, or copy an existing folder to make a new plugin.
 2. Run `npm run build` (plain Node 18+; nothing to install).
-3. Commit and push to `main`.
+3. Commit and push to `master`.
 
 Keep `index.js` starting with `(() => {` on the very first line, with no comment or blank line above it.
 Kettu runs the file as `return <your code>`, so anything before the `(` makes it return nothing.
