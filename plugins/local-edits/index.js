@@ -5,7 +5,6 @@
     const { findInReactTree } = vendetta.utils;
     const { registerCommand } = vendetta.commands;
     const { showToast } = vendetta.ui.toasts;
-    const { showInputAlert } = vendetta.ui.alerts;
     const { getAssetIDByName } = vendetta.ui.assets;
     const { storage } = vendetta.plugin;
     const log = vendetta.logger;
@@ -143,19 +142,76 @@
         return ok;
     }
 
-    function openEditor(message) {
-        const current = storage.edits[message.id]?.content ?? message.content ?? "";
-        showInputAlert({
-            title: "Edit locally",
-            initialValue: current,
-            placeholder: "New message text",
-            confirmText: "Save",
-            cancelText: "Cancel",
-            onConfirm: text => {
-                if (!text || !text.trim()) throw new Error("Message can't be empty; use Hide instead");
-                edit(message, text);
-            }
+    // Kettu's showInputAlert uses an alert component newer Discord no longer has (it crashes),
+    // so build the dialog from the same pieces Kettu's own "install plugin" box uses.
+    const EDITOR_KEY = "LocalEditsEditor";
+    const { View } = vendetta.metro.common.ReactNative;
+
+    // Looked up directly rather than through Kettu's lazy wrappers, so a missing
+    // component shows up as undefined here instead of crashing when drawn.
+    const single = prop => vendetta.metro.find(m => m?.[prop] && Object.keys(m).length === 1)?.[prop];
+
+    function editorParts() {
+        const modal = findByProps("AlertModal", "AlertActions") ?? {};
+        const alerts = findByProps("openAlert", "dismissAlert") ?? {};
+        return {
+            AlertModal: modal.AlertModal,
+            AlertActionButton: modal.AlertActionButton,
+            TextInput: single("TextInput"),
+            Button: single("Button"),
+            openAlert: alerts.openAlert,
+            dismissAlert: alerts.dismissAlert,
+            // Older Discord versions have no extraContent, so the input goes into content instead.
+            hasExtraContent: !!globalThis.bunny?.metro?.findByFilePath?.("modules/forwarding/native/ForwardFailedAlertModal.tsx")
+        };
+    }
+
+    function EditorAlert({ parts, message, initial }) {
+        const { AlertModal, AlertActionButton, TextInput, Button, dismissAlert, hasExtraContent } = parts;
+        const [value, setValue] = React.useState(initial);
+        const [error, setError] = React.useState("");
+
+        const save = () => {
+            if (!value || !value.trim()) return setError("Message can't be empty; use Hide instead");
+            edit(message, value);
+            dismissAlert(EDITOR_KEY);
+        };
+
+        const input = React.createElement(TextInput, {
+            autoFocus: true,
+            isClearable: true,
+            value,
+            onChange: v => {
+                setValue(typeof v === "string" ? v : v?.text ?? "");
+                if (error) setError("");
+            },
+            returnKeyType: "done",
+            onSubmitEditing: save,
+            state: error ? "error" : undefined,
+            errorMessage: error || undefined
         });
+
+        const actions = React.createElement(View, { style: { gap: 8 } },
+            Button
+                ? React.createElement(Button, { text: "Save", variant: "primary", onPress: save })
+                : React.createElement(AlertActionButton, { text: "Save", variant: "primary", onPress: save }),
+            React.createElement(AlertActionButton, { text: "Cancel", variant: "secondary" })
+        );
+
+        return hasExtraContent
+            ? React.createElement(AlertModal, { title: "Edit locally", content: "New text for this message:", extraContent: input, actions })
+            : React.createElement(AlertModal, { title: "Edit locally", content: React.createElement(View, { style: { gap: 16 } }, input), actions });
+    }
+
+    function openEditor(message) {
+        const parts = editorParts();
+        const missing = ["AlertModal", "AlertActionButton", "TextInput", "openAlert", "dismissAlert"].filter(k => !parts[k]);
+        if (missing.length) {
+            log.error("Local Edits: edit dialog unavailable, missing", missing.join(", "));
+            return void showToast("Edit box unavailable here. Reply to the message and use /ledit instead");
+        }
+        const initial = storage.edits[message.id]?.content ?? message.content ?? "";
+        parts.openAlert(EDITOR_KEY, React.createElement(EditorAlert, { parts, message, initial }));
     }
 
     // ---- Long-press menu ---------------------------------------------------------
