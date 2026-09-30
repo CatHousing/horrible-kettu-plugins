@@ -1,0 +1,14 @@
+{
+  "name": "Terminal Prompt",
+  "description": "Turns the message box placeholder into a shell prompt, e.g. ethan@discord:~/#general$",
+  "authors": [
+    {
+      "name": "ethan"
+    }
+  ],
+  "main": "index.js",
+  "hash": "2a7558aa6a98a67b4c638dd435162480ce607487ba74ddf749d18aa5003b9cae",
+  "vendetta": {
+    "icon": "SlashBoxIcon"
+  }
+}
