@@ -352,7 +352,7 @@
         }
     ];
 
-    return {
+    const plugin = {
         onLoad() {
             MessageStore = findByStoreName("MessageStore");
             SelectedChannelStore = findByStoreName("SelectedChannelStore");
@@ -373,14 +373,38 @@
             for (const command of commands) unpatches.push(registerCommand({ displayName: command.name, displayDescription: command.description, ...command }));
             applyToLoaded();
         },
-        onUnload() {
+        onUnload(superseded) {
             // Show the real text again while the plugin is off; the saved edits come back when it's on.
-            for (const [id, e] of Object.entries(storage.edits)) {
+            if (!superseded) for (const [id, e] of Object.entries(storage.edits)) {
                 if (e.original != null && MessageStore?.getMessage?.(e.channelId, id)) dispatchContent(id, e.channelId, e.original);
             }
             unpatchSheet?.();
             unpatchSheet = null;
             unpatches.splice(0).forEach(u => u());
+        }
+    };
+
+    // Kettu can start a plugin again without stopping the copy that's already running,
+    // which doubled commands and made two copies fight. Only ever let one copy run.
+    const SLOT = "local-edits";
+    const live = (globalThis.__horribleKettuPlugins ??= {});
+    let running = false;
+    const stop = superseded => {
+        if (!running) return;
+        running = false;
+        plugin.onUnload(superseded);
+    };
+
+    return {
+        onLoad() {
+            live[SLOT]?.(true);
+            live[SLOT] = stop;
+            running = true;
+            plugin.onLoad();
+        },
+        onUnload() {
+            if (live[SLOT] === stop) delete live[SLOT];
+            stop(false);
         }
     };
 })()

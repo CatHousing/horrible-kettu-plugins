@@ -76,7 +76,7 @@
         return element;
     }
 
-    return {
+    const plugin = {
         onLoad() {
             UserStore = findByStoreName("UserStore");
             ChannelStore = findByStoreName("ChannelStore");
@@ -95,6 +95,30 @@
         },
         onUnload() {
             unpatches.splice(0).forEach(u => u());
+        }
+    };
+
+    // Kettu can start a plugin again without stopping the copy that's already running,
+    // which doubled commands and made two copies fight. Only ever let one copy run.
+    const SLOT = "terminal-prompt";
+    const live = (globalThis.__horribleKettuPlugins ??= {});
+    let running = false;
+    const stop = superseded => {
+        if (!running) return;
+        running = false;
+        plugin.onUnload(superseded);
+    };
+
+    return {
+        onLoad() {
+            live[SLOT]?.(true);
+            live[SLOT] = stop;
+            running = true;
+            plugin.onLoad();
+        },
+        onUnload() {
+            if (live[SLOT] === stop) delete live[SLOT];
+            stop(false);
         }
     };
 })()

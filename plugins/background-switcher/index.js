@@ -99,7 +99,7 @@
             : "Background set");
     }
 
-    return {
+    const plugin = {
         onLoad() {
             unregister = registerCommand({
                 name: "background",
@@ -126,12 +126,36 @@
                 apply();
             }).catch(e => log.error("Background Switcher: themes storage unavailable", e));
         },
-        onUnload() {
+        onUnload(superseded) {
             unregister?.();
             unsubscribe?.();
-            // Disabling the plugin puts the theme's own background back,
-            // but keeps the saved link for when it's turned on again.
-            if (storage.url) restoreDefault();
+            // Disabling the plugin puts the theme's own background back, but keeps the
+            // saved link for when it's turned on again. Skipped when a new copy takes over.
+            if (storage.url && !superseded) restoreDefault();
+        }
+    };
+
+    // Kettu can start a plugin again without stopping the copy that's already running,
+    // which doubled commands and made two copies fight. Only ever let one copy run.
+    const SLOT = "background-switcher";
+    const live = (globalThis.__horribleKettuPlugins ??= {});
+    let running = false;
+    const stop = superseded => {
+        if (!running) return;
+        running = false;
+        plugin.onUnload(superseded);
+    };
+
+    return {
+        onLoad() {
+            live[SLOT]?.(true);
+            live[SLOT] = stop;
+            running = true;
+            plugin.onLoad();
+        },
+        onUnload() {
+            if (live[SLOT] === stop) delete live[SLOT];
+            stop(false);
         }
     };
 })()
