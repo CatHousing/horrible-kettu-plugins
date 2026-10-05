@@ -12,6 +12,7 @@
     let unregister;
     let unsubscribe;
     let applying = false;
+    let stopped = false;
     let queued = false;
 
     const currentTheme = () => Object.values(themeApi.themes).find(t => t?.selected) ?? null;
@@ -21,19 +22,21 @@
 
     // Puts the saved link on the selected theme. Kettu re-downloads themes on every
     // launch, which wipes it, so this runs again whenever the themes storage changes.
-    function apply() {
+    // `force` re-selects the theme even when its saved data already has the link: at launch
+    // Kettu draws from the loader's own copy of the theme, which can be missing the background.
+    function apply(force = false) {
         const url = storage.url;
         const theme = currentTheme();
-        if (!url || !theme || applying) return false;
+        if (!url || !theme || applying || stopped) return false;
 
         const holder = backgroundHolder(theme);
         if (!holder) return false;
-        if (holder.background?.url === url) return true;
+        if (holder.background?.url === url && !force) return true;
 
         applying = true;
         try {
             // Keep the theme's own blur/opacity, only swap the image.
-            holder.background = { ...(holder.background ?? {}), url };
+            if (holder.background?.url !== url) holder.background = { ...(holder.background ?? {}), url };
             Promise.resolve(themeApi.selectTheme(theme.id))
                 .catch(e => log.error("Background Switcher: failed to save theme", e));
         } catch (e) {
@@ -117,16 +120,24 @@
                 execute
             });
 
+            stopped = false;
             vendetta.storage.awaitSyncWrapper(themeApi.themes).then(() => {
+                // This copy may have been shut down while it waited.
+                if (stopped) return;
                 const emitter = themeApi.themes[EMITTER];
                 if (emitter) {
                     emitter.on("SET", onThemesChanged);
                     unsubscribe = () => emitter.off("SET", onThemesChanged);
                 }
-                apply();
+                const theme = currentTheme();
+                if (!storage.url) log.log("Background Switcher: no saved background");
+                else if (!theme) log.log("Background Switcher: saved background found, waiting for a theme to be selected");
+                else log.log(`Background Switcher: putting saved background back on ${theme.data?.name ?? theme.id}`);
+                apply(true);
             }).catch(e => log.error("Background Switcher: themes storage unavailable", e));
         },
         onUnload(superseded) {
+            stopped = true;
             unregister?.();
             unsubscribe?.();
             // Disabling the plugin puts the theme's own background back, but keeps the
